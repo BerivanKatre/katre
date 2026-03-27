@@ -3,31 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Öğrenci Randevu Sistemi</title>
+    <title>EduPlanner | Bulut Takip</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-10">
 
-    <nav class="bg-white border-b p-4 mb-6 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-indigo-600 italic">Ders Planlayıcı</h1>
-            <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition">
+    <nav class="bg-white border-b p-4 mb-6 sticky top-0 z-50 shadow-sm text-center md:text-left">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl font-bold text-indigo-600 italic">EduPlanner Cloud</h1>
+            <button onclick="document.getElementById('modal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-indigo-100 transition w-full md:w-auto">
                 + Yeni Ders Ekle
             </button>
         </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-4">
-        <div id="weeklyGrid" class="grid grid-cols-1 md:grid-cols-7 gap-3 mb-8">
+        <div id="weeklyGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3 mb-8">
             </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 border-b bg-slate-50 font-bold text-slate-700 text-sm italic">
-                Tüm Randevular
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b bg-slate-50 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                Ders Akışı (Canlı Veri)
             </div>
             <div id="fullList" class="divide-y divide-slate-100">
                 </div>
@@ -35,101 +32,116 @@
     </main>
 
     <div id="modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
-            <div class="p-5 border-b font-bold text-slate-800">Ders Detayları</div>
-            <div class="p-5 space-y-4">
-                <input type="text" id="studentName" placeholder="Öğrenci Adı" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
-                
-                <select id="lessonDay" class="w-full border rounded-lg p-3 outline-none">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all">
+            <div class="p-5 border-b font-bold text-slate-800 bg-slate-50 flex justify-between">
+                <span>Ders Tanımla</span>
+                <button onclick="document.getElementById('modal').classList.add('hidden')" class="text-slate-400">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="text" id="studentName" placeholder="Öğrenci Adı" class="w-full border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500">
+                <select id="lessonDay" class="w-full border border-slate-200 rounded-xl p-3 outline-none">
                     <option>Pazartesi</option><option>Salı</option><option>Çarşamba</option>
                     <option>Perşembe</option><option>Cuma</option><option>Cumartesi</option><option>Pazar</option>
                 </select>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Başlangıç</label>
-                        <input type="time" id="startTime" class="w-full border rounded-lg p-2 outline-none">
+                        <label class="text-[10px] font-bold text-slate-400 ml-1">BAŞLANGIÇ</label>
+                        <input type="time" id="startTime" class="w-full border border-slate-200 rounded-xl p-3 outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Bitiş</label>
-                        <input type="time" id="endTime" class="w-full border rounded-lg p-2 outline-none">
+                        <label class="text-[10px] font-bold text-slate-400 ml-1">BİTİŞ</label>
+                        <input type="time" id="endTime" class="w-full border border-slate-200 rounded-xl p-3 outline-none">
                     </div>
                 </div>
-
                 <div class="flex gap-2 pt-2">
-                    <button onclick="closeModal()" class="flex-1 text-slate-400 font-medium">İptal</button>
-                    <button onclick="saveData()" class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-bold">Kaydet</button>
+                    <button id="saveBtn" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">Buluta Kaydet</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-        let db = JSON.parse(localStorage.getItem('edu_planner_v3')) || [];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        function openModal() { document.getElementById('modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        // Senin Bilgilerin Buraya Yerleştirildi
+        const firebaseConfig = {
+            apiKey: "AIzaSyApzgPFdLCsjFrKSPCG3mP-L5Z0KSmULJY",
+            authDomain: "katrederstakip.firebaseapp.com",
+            projectId: "katrederstakip",
+            storageBucket: "katrederstakip.firebasestorage.app",
+            messagingSenderId: "730317351089",
+            appId: "1:730317351089:web:be53ae12adc8fd5bcfda90"
+        };
 
-        function saveData() {
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const lessonCol = collection(db, "lessons");
+
+        // Kaydetme İşlemi
+        document.getElementById('saveBtn').onclick = async () => {
             const name = document.getElementById('studentName').value;
             const day = document.getElementById('lessonDay').value;
             const start = document.getElementById('startTime').value;
             const end = document.getElementById('endTime').value;
 
-            if(!name || !start || !end) return alert("Lütfen eksik alan bırakmayın.");
+            if(!name || !start || !end) return alert("Lütfen tüm alanları doldurun!");
 
-            db.push({ id: Date.now(), name, day, start, end });
-            localStorage.setItem('edu_planner_v3', JSON.stringify(db));
-            render();
-            closeModal();
-            document.getElementById('studentName').value = '';
-        }
+            try {
+                await addDoc(lessonCol, { name, day, start, end, timestamp: Date.now() });
+                document.getElementById('modal').classList.add('hidden');
+                document.getElementById('studentName').value = '';
+            } catch (e) {
+                alert("Veri kaydedilemedi. Firebase Kurallarını (Rules) 'true' yaptığınızdan emin olun!");
+            }
+        };
 
-        function deleteItem(id) {
-            db = db.filter(i => i.id !== id);
-            localStorage.setItem('edu_planner_v3', JSON.stringify(db));
-            render();
-        }
-
-        function render() {
-            // Haftalık Grid
+        // Verileri Canlı Dinleme
+        onSnapshot(query(lessonCol, orderBy("start")), (snapshot) => {
+            const lessons = [];
+            snapshot.forEach(doc => lessons.push({ id: doc.id, ...doc.data() }));
+            
+            const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+            
+            // Haftalık Tabloyu Güncelle
             let gridHTML = '';
             days.forEach(day => {
-                const dayLessons = db.filter(l => l.day === day).sort((a,b) => a.start.localeCompare(b.start));
+                const dayLessons = lessons.filter(l => l.day === day);
                 gridHTML += `
-                    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm min-h-[120px]">
-                        <div class="bg-slate-100 p-2 text-center font-bold text-[11px] text-slate-600 border-b">${day}</div>
-                        <div class="p-2 space-y-2 text-[11px]">
+                    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm min-h-[120px]">
+                        <div class="bg-indigo-50 p-2 text-center font-bold text-[10px] text-indigo-600 border-b border-indigo-100 uppercase">${day}</div>
+                        <div class="p-2 space-y-2 text-[10px]">
                             ${dayLessons.map(l => `
-                                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-2 rounded">
-                                    <div class="font-bold text-indigo-800">${l.start} - ${l.end}</div>
-                                    <div class="text-slate-700 truncate">${l.name}</div>
+                                <div class="bg-slate-50 border-l-4 border-indigo-500 p-2 rounded shadow-sm">
+                                    <div class="font-bold text-slate-800">${l.start} - ${l.end}</div>
+                                    <div class="text-indigo-600 truncate font-semibold">${l.name}</div>
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
             document.getElementById('weeklyGrid').innerHTML = gridHTML;
 
-            // Liste Görünümü
-            const listHTML = db.map(l => `
-                <div class="p-4 flex items-center justify-between hover:bg-slate-50">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold">${l.start} - ${l.end}</div>
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">${l.name}</h4>
-                            <p class="text-[10px] text-slate-400 uppercase font-bold">${l.day}</p>
-                        </div>
+            // Liste Görünümünü Güncelle
+            document.getElementById('fullList').innerHTML = lessons.map(l => `
+                <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] font-bold">${l.start}</span>
+                        <span class="text-slate-700 font-medium">${l.name} <span class="text-slate-400 font-normal ml-2">(${l.day})</span></span>
                     </div>
-                    <button onclick="deleteItem(${l.id})" class="text-slate-300 hover:text-red-500 text-xs">SİL</button>
+                    <button onclick="window.deleteItem('${l.id}')" class="text-red-300 hover:text-red-500 transition">
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
                 </div>
-            `).join('');
-            document.getElementById('fullList').innerHTML = listHTML || '<p class="p-10 text-center text-slate-300">Ders eklenmedi.</p>';
-        }
+            `).join('') || '<p class="p-10 text-center text-slate-300 text-sm italic">Henüz bulutta ders kaydı yok.</p>';
+        });
 
-        render();
+        // Silme İşlemi
+        window.deleteItem = async (id) => {
+            if(confirm("Dersi silmek istiyor musunuz?")) {
+                await deleteDoc(doc(db, "lessons", id));
+            }
+        };
     </script>
 </body>
 </html>
